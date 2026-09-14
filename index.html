@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuestMate AI</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter,Segoe UI,sans-serif;
+}
+
+body{
+background:#0f172a;
+color:white;
+min-height:100vh;
+padding:20px;
+}
+
+.header{
+text-align:center;
+margin-bottom:20px;
+}
+
+.header h1{
+font-size:2.5rem;
+}
+
+.header p{
+color:#94a3b8;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1.2fr 1fr 1fr;
+gap:20px;
+}
+
+.card{
+background:#1e293b;
+border-radius:16px;
+padding:20px;
+box-shadow:0 0 20px rgba(0,0,0,.3);
+}
+
+.card h2{
+margin-bottom:15px;
+}
+
+textarea{
+width:100%;
+height:160px;
+background:#0f172a;
+color:white;
+border:1px solid #334155;
+border-radius:10px;
+padding:12px;
+resize:none;
+}
+
+button{
+margin-top:10px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#3b82f6;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+opacity:.9;
+}
+
+.processing{
+margin-top:12px;
+display:none;
+color:#fbbf24;
+}
+
+.ticket{
+margin-top:15px;
+background:#0f172a;
+padding:12px;
+border-radius:10px;
+font-size:14px;
+}
+
+ul{
+list-style:none;
+}
+
+li{
+background:#0f172a;
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+.stats{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+margin-top:15px;
+}
+
+.stat{
+background:#0f172a;
+padding:15px;
+border-radius:12px;
+text-align:center;
+}
+
+.number{
+font-size:28px;
+font-weight:bold;
+margin-top:5px;
+}
+
+.badge{
+display:inline-block;
+padding:5px 10px;
+background:#22c55e;
+border-radius:20px;
+font-size:12px;
+margin-top:8px;
+}
+
+@media(max-width:900px){
+.grid{
+grid-template-columns:1fr;
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h1>🏨 GuestMate AI</h1>
+<p>AI-Powered Hotel Service Automation Platform</p>
+</div>
+
+<div class="grid">
+
+<div class="card">
+<h2>Guest Request</h2>
+
+<textarea id="request"
+placeholder="Example:
+Can I get 2 extra towels delivered to Room 304 and order a medium Margherita pizza without onions?"></textarea>
+
+<button onclick="processRequest()">
+Submit Request
+</button>
+
+<div id="processing" class="processing">
+🤖 AI Processing Request...
+</div>
+
+<div id="ticket"></div>
+</div>
+
+<div class="card">
+<h2>🧹 Housekeeping Queue</h2>
+<ul id="housekeeping"></ul>
+</div>
+
+<div class="card">
+<h2>🍕 Kitchen Queue</h2>
+<ul id="kitchen"></ul>
+
+<div class="stats">
+
+<div class="stat">
+Total Requests
+<div class="number" id="total">0</div>
+</div>
+
+<div class="stat">
+Pending Tasks
+<div class="number" id="pending">0</div>
+</div>
+
+<div class="stat">
+Kitchen Orders
+<div class="number" id="kitchenCount">0</div>
+</div>
+
+<div class="stat">
+Housekeeping
+<div class="number" id="houseCount">0</div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+let totalRequests=0;
+let pendingTasks=0;
+let kitchenOrders=0;
+let houseOrders=0;
+
+function updateStats(){
+
+document.getElementById("total").innerText=totalRequests;
+document.getElementById("pending").innerText=pendingTasks;
+document.getElementById("kitchenCount").innerText=kitchenOrders;
+document.getElementById("houseCount").innerText=houseOrders;
+
+}
+
+function processRequest(){
+
+let request=
+document.getElementById("request").value.trim();
+
+if(!request){
+alert("Enter a request");
+return;
+}
+
+document.getElementById("processing").style.display="block";
+
+setTimeout(()=>{
+
+document.getElementById("processing").style.display="none";
+
+totalRequests++;
+pendingTasks++;
+
+let roomMatch=
+request.match(/room\s*(\d+)/i);
+
+let room=
+roomMatch ? roomMatch[1] : "Unknown";
+
+let ticket=
+{
+room:room,
+request:request,
+status:"Pending"
+};
+
+document.getElementById("ticket").innerHTML=
+`
+<div class="ticket">
+<h3>🎫 AI Generated Ticket</h3>
+<p><b>Room:</b> ${ticket.room}</p>
+<p><b>Status:</b> ${ticket.status}</p>
+<p><b>Request:</b> ${ticket.request}</p>
+<div class="badge">Processed by AI</div>
+</div>
+`;
+
+let lower=request.toLowerCase();
+
+if(
+lower.includes("towel") ||
+lower.includes("clean") ||
+lower.includes("housekeeping")
+){
+
+houseOrders++;
+
+let li=document.createElement("li");
+
+li.innerHTML=
+`
+Room ${room}<br>
+${request}
+`;
+
+document.getElementById("housekeeping")
+.appendChild(li);
+}
+
+if(
+lower.includes("pizza") ||
+lower.includes("burger") ||
+lower.includes("food") ||
+lower.includes("coffee")
+){
+
+kitchenOrders++;
+
+let li=document.createElement("li");
+
+li.innerHTML=
+`
+Room ${room}<br>
+${request}
+`;
+
+document.getElementById("kitchen")
+.appendChild(li);
+}
+
+updateStats();
+
+},1500);
+
+}
+
+updateStats();
+
+</script>
+
+</body>
+</html>
